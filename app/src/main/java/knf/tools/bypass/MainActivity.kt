@@ -16,8 +16,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        startBypass(666,"https://animeflv.net")
+        setContentView(R.layout.lay_web)
+        startBypass(666,"https://animeflv.net",false)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
