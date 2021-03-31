@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.github.kittinunf.fuel.Fuel
 import knf.kuma.uagen.randomUA
 import kotlinx.android.synthetic.main.lay_web.*
@@ -129,6 +130,13 @@ class BypassActivity: AppCompatActivity() {
 
 fun AppCompatActivity.startBypass(code: Int,url:String, showReload: Boolean){
     startActivityForResult(Intent(this,BypassActivity::class.java).apply {
+        putExtra("url",url)
+        putExtra("showReload",showReload)
+    },code)
+}
+
+fun Fragment.startBypass(code: Int,url:String, showReload: Boolean){
+    startActivityForResult(Intent(requireContext(),BypassActivity::class.java).apply {
         putExtra("url",url)
         putExtra("showReload",showReload)
     },code)
