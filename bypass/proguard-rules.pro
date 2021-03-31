@@ -21,3 +21,4 @@
 #-renamesourcefileattribute SourceFile
 
 -keep com.github.kittinunf.fuel.**
+-keep knf.tools.**
