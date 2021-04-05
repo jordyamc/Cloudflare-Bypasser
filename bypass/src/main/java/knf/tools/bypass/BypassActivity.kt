@@ -34,6 +34,7 @@ class BypassActivity: AppCompatActivity() {
             cacheMode = WebSettings.LOAD_NO_CACHE
             setAppCacheEnabled(false)
         }
+
         webview.webViewClient = object : WebViewClient(){
 
             override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
