@@ -15,10 +15,10 @@ import com.github.kittinunf.fuel.Fuel
 import knf.kuma.uagen.randomUA
 import kotlinx.android.synthetic.main.lay_web.*
 
-class BypassActivity: AppCompatActivity() {
+class BypassActivity : AppCompatActivity() {
 
-    private val url by lazy { intent.getStringExtra("url")?:"about:blank" }
-    private val showReload by lazy { intent.getBooleanExtra("showReload",false) }
+    private val url by lazy { intent.getStringExtra("url") ?: "about:blank" }
+    private val showReload by lazy { intent.getBooleanExtra("showReload", false) }
     private var tryCount = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,10 +34,12 @@ class BypassActivity: AppCompatActivity() {
             cacheMode = WebSettings.LOAD_NO_CACHE
             setAppCacheEnabled(false)
         }
+        webview.webViewClient = object : WebViewClient() {
 
-        webview.webViewClient = object : WebViewClient(){
-
-            override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
                 request?.url?.toString()?.let {
                     if (!it.contains("captcha"))
                         return null
@@ -48,29 +50,34 @@ class BypassActivity: AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 url?.let {
-                    Log.e("Finish",it)
+                    Log.e("Finish", it)
                     val cookies = currentCookies()
-                    Log.e("Cookies",cookies)
-                    if (cookies.contains("cf_clearance")){
-                        setResult(Activity.RESULT_OK,Intent().apply {
-                            putExtra("user_agent",webview.settings.userAgentString)
-                            putExtra("cookies",cookies)
+                    Log.e("Cookies", cookies)
+                    if (cookies.contains("cf_clearance")) {
+                        setResult(Activity.RESULT_OK, Intent().apply {
+                            putExtra("user_agent", webview.settings.userAgentString)
+                            putExtra("cookies", cookies)
                         })
                         finish()
-                    }else{
-                        Fuel.get(this@BypassActivity.url).header("User-Agent",webview.settings.userAgentString)
-                                .response { _, response, _ ->
-                                    Log.e("Test UA bypass","Response code: ${response.statusCode}")
-                                    if (response.statusCode == 200){
-                                        runOnUiThread {
-                                            setResult(Activity.RESULT_CANCELED,Intent().apply {
-                                                putExtra("user_agent",webview.settings.userAgentString)
-                                                putExtra("cookies",cookies)
-                                            })
-                                            this@BypassActivity.finish()
-                                        }
+                    } else {
+                        Fuel.get(this@BypassActivity.url)
+                            .header("User-Agent", webview.settings.userAgentString)
+                            .response { _, response, _ ->
+                                Log.e("Test UA bypass", "Response code: ${response.statusCode}")
+                                if (response.statusCode == 200) {
+                                    runOnUiThread {
+                                        setResult(Activity.RESULT_CANCELED, Intent().apply {
+                                            putExtra("user_agent", webview.settings.userAgentString)
+                                            putExtra("cookies", cookies)
+                                        })
+                                        this@BypassActivity.finish()
+                                    }
+                                } else if (!showReload) {
+                                    runOnUiThread {
+                                        forceReload()
                                     }
                                 }
+                            }
                     }
                 }
             }
@@ -81,7 +88,7 @@ class BypassActivity: AppCompatActivity() {
             ): Boolean {
                 request?.url?.toString()?.let {
                     tryCount++
-                    if (tryCount >= 3){
+                    if (tryCount >= 3) {
                         tryCount = 0
                         webview.settings.userAgentString = randomUA()
                     }
@@ -94,15 +101,19 @@ class BypassActivity: AppCompatActivity() {
         webview.settings.userAgentString = randomUA()
         webview.loadUrl(url)
         reload.setOnClickListener {
-            tryCount = 0
-            webview.settings.userAgentString = randomUA()
-            webview.loadUrl(url)
+            forceReload()
         }
+    }
+
+    private fun forceReload() {
+        tryCount = 0
+        webview.settings.userAgentString = randomUA()
+        webview.loadUrl(url)
     }
 
     private fun currentCookies() = try {
         CookieManager.getInstance().getCookie(url)!!
-    }catch (e:Exception){
+    } catch (e: Exception) {
         e.printStackTrace()
         "Null"
     }
@@ -112,13 +123,13 @@ class BypassActivity: AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        setResult(Activity.RESULT_CANCELED,Intent().apply {
-            putExtra("user_agent",webview.settings.userAgentString)
+        setResult(Activity.RESULT_CANCELED, Intent().apply {
+            putExtra("user_agent", webview.settings.userAgentString)
         })
         super.onBackPressed()
     }
 
-    fun String.containsAny(vararg terms: String): Boolean{
+    fun String.containsAny(vararg terms: String): Boolean {
         terms.forEach {
             if (contains(it))
                 return true
@@ -127,23 +138,23 @@ class BypassActivity: AppCompatActivity() {
     }
 }
 
-fun AppCompatActivity.startBypass(code: Int,url:String, showReload: Boolean){
-    startActivityForResult(Intent(this,BypassActivity::class.java).apply {
-        putExtra("url",url)
-        putExtra("showReload",showReload)
-    },code)
+fun AppCompatActivity.startBypass(code: Int, url: String, showReload: Boolean) {
+    startActivityForResult(Intent(this, BypassActivity::class.java).apply {
+        putExtra("url", url)
+        putExtra("showReload", showReload)
+    }, code)
 }
 
-fun Fragment.startBypass(code: Int,url:String, showReload: Boolean){
-    startActivityForResult(Intent(requireContext(),BypassActivity::class.java).apply {
-        putExtra("url",url)
-        putExtra("showReload",showReload)
-    },code)
+fun Fragment.startBypass(code: Int, url: String, showReload: Boolean) {
+    startActivityForResult(Intent(requireContext(), BypassActivity::class.java).apply {
+        putExtra("url", url)
+        putExtra("showReload", showReload)
+    }, code)
 }
 
-fun startBypass(activity: Activity,code: Int,url:String, showReload: Boolean){
-    activity.startActivityForResult(Intent(activity,BypassActivity::class.java).apply {
-        putExtra("url",url)
-        putExtra("showReload",showReload)
-    },code)
+fun startBypass(activity: Activity, code: Int, url: String, showReload: Boolean) {
+    activity.startActivityForResult(Intent(activity, BypassActivity::class.java).apply {
+        putExtra("url", url)
+        putExtra("showReload", showReload)
+    }, code)
 }
