@@ -57,9 +57,6 @@ class BypassActivity: AppCompatActivity() {
                         })
                         finish()
                     }else{
-                       /* Handler(Looper.getMainLooper()).postDelayed({
-
-                        },2000)*/
                         Fuel.get(this@BypassActivity.url).header("User-Agent",webview.settings.userAgentString)
                                 .response { _, response, _ ->
                                     Log.e("Test UA bypass","Response code: ${response.statusCode}")
@@ -67,6 +64,7 @@ class BypassActivity: AppCompatActivity() {
                                         runOnUiThread {
                                             setResult(Activity.RESULT_CANCELED,Intent().apply {
                                                 putExtra("user_agent",webview.settings.userAgentString)
+                                                putExtra("cookies",cookies)
                                             })
                                             this@BypassActivity.finish()
                                         }
