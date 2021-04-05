@@ -60,6 +60,7 @@ class BypassActivity : AppCompatActivity() {
                         })
                         finish()
                     } else {
+                        Log.e("Bypass title","${view?.title}")
                         Fuel.get(this@BypassActivity.url)
                             .header("User-Agent", webview.settings.userAgentString)
                             .response { _, response, _ ->
@@ -72,7 +73,7 @@ class BypassActivity : AppCompatActivity() {
                                         })
                                         this@BypassActivity.finish()
                                     }
-                                } else if (!showReload) {
+                                } else if (!showReload && view?.title != "Just a moment...") {
                                     runOnUiThread {
                                         forceReload()
                                     }
