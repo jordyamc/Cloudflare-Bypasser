@@ -68,6 +68,7 @@ class BypassActivity : AppCompatActivity() {
                             putExtra("user_agent", webview.settings.userAgentString)
                             putExtra("cookies", cookies)
                         })
+                        reloadCountdown.removeCallbacks(reloadRun)
                         finish()
                     } else {
                         Fuel.get(this@BypassActivity.url)
@@ -83,6 +84,7 @@ class BypassActivity : AppCompatActivity() {
                                             )
                                             putExtra("cookies", cookies)
                                         })
+                                        reloadCountdown.removeCallbacks(reloadRun)
                                         this@BypassActivity.finish()
                                     } else {
                                         if (!showReload && view?.title != "Just a moment...") {
