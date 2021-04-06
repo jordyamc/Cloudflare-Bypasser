@@ -85,7 +85,7 @@ class BypassActivity : AppCompatActivity() {
                                 } else {
                                     runOnUiThread {
                                         if (!showReload && view?.title != "Just a moment...") {
-                                            reloadCountdown.postDelayed(reloadRun, 6000)
+                                            reloadCountdown.postDelayed(reloadRun, 3000)
                                             forceReload()
                                         }
                                     }
