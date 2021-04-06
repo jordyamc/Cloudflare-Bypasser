@@ -25,7 +25,7 @@ class BypassActivity : AppCompatActivity() {
     private val reloadCountdown = Handler(Looper.getMainLooper())
     private val reloadRun = Runnable {
         lifecycleScope.launch(Dispatchers.Main) {
-            reload.show()
+            forceReload()
         }
     }
     private var tryCount = 0
