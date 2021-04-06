@@ -25,7 +25,7 @@ class BypassActivity : AppCompatActivity() {
     private val reloadCountdown = Handler(Looper.getMainLooper())
     private val reloadRun = Runnable {
         lifecycleScope.launch(Dispatchers.Main) {
-            forceReload()
+            reload.show()
         }
     }
     private var tryCount = 0
@@ -70,7 +70,6 @@ class BypassActivity : AppCompatActivity() {
                         })
                         finish()
                     } else {
-                        Log.e("Bypass title", "${view?.title}")
                         Fuel.get(this@BypassActivity.url)
                             .header("User-Agent", webview.settings.userAgentString)
                             .response { _, response, _ ->
