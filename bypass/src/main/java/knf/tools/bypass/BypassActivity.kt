@@ -141,14 +141,6 @@ class BypassActivity : AppCompatActivity() {
         })
         super.onBackPressed()
     }
-
-    fun String.containsAny(vararg terms: String): Boolean {
-        terms.forEach {
-            if (contains(it))
-                return true
-        }
-        return false
-    }
 }
 
 fun AppCompatActivity.startBypass(code: Int, url: String, showReload: Boolean) {
