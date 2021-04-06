@@ -74,16 +74,17 @@ class BypassActivity : AppCompatActivity() {
                             .header("User-Agent", webview.settings.userAgentString)
                             .response { _, response, _ ->
                                 Log.e("Test UA bypass", "Response code: ${response.statusCode}")
-                                if (response.statusCode == 200) {
-                                    runOnUiThread {
+                                lifecycleScope.launch(Dispatchers.Main) {
+                                    if (response.statusCode == 200) {
                                         setResult(Activity.RESULT_CANCELED, Intent().apply {
-                                            putExtra("user_agent", webview.settings.userAgentString)
+                                            putExtra(
+                                                "user_agent",
+                                                webview.settings.userAgentString
+                                            )
                                             putExtra("cookies", cookies)
                                         })
                                         this@BypassActivity.finish()
-                                    }
-                                } else {
-                                    runOnUiThread {
+                                    } else {
                                         if (!showReload && view?.title != "Just a moment...") {
                                             reloadCountdown.postDelayed(reloadRun, 3000)
                                             forceReload()
