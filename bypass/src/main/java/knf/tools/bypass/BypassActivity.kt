@@ -11,14 +11,23 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.github.kittinunf.fuel.Fuel
 import knf.kuma.uagen.randomUA
 import kotlinx.android.synthetic.main.lay_web.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class BypassActivity : AppCompatActivity() {
 
     private val url by lazy { intent.getStringExtra("url") ?: "about:blank" }
     private val showReload by lazy { intent.getBooleanExtra("showReload", false) }
+    private val reloadCountdown = Handler(Looper.getMainLooper())
+    private val reloadRun = Runnable {
+        lifecycleScope.launch(Dispatchers.Main) {
+            forceReload()
+        }
+    }
     private var tryCount = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +58,7 @@ class BypassActivity : AppCompatActivity() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
+                reloadCountdown.removeCallbacks(reloadRun)
                 url?.let {
                     Log.e("Finish", it)
                     val cookies = currentCookies()
@@ -60,7 +70,7 @@ class BypassActivity : AppCompatActivity() {
                         })
                         finish()
                     } else {
-                        Log.e("Bypass title","${view?.title}")
+                        Log.e("Bypass title", "${view?.title}")
                         Fuel.get(this@BypassActivity.url)
                             .header("User-Agent", webview.settings.userAgentString)
                             .response { _, response, _ ->
@@ -73,9 +83,12 @@ class BypassActivity : AppCompatActivity() {
                                         })
                                         this@BypassActivity.finish()
                                     }
-                                } else if (!showReload && view?.title != "Just a moment...") {
+                                } else {
                                     runOnUiThread {
-                                        forceReload()
+                                        if (!showReload && view?.title != "Just a moment...") {
+                                            reloadCountdown.postDelayed(reloadRun, 6000)
+                                            forceReload()
+                                        }
                                     }
                                 }
                             }
