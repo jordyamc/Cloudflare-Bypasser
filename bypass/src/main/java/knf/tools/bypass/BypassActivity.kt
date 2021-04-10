@@ -49,10 +49,10 @@ class BypassActivity : AppCompatActivity() {
                 view: WebView?,
                 request: WebResourceRequest?
             ): WebResourceResponse? {
-                request?.url?.toString()?.let {
+                /*request?.url?.toString()?.let {
                     if (!it.contains("captcha"))
                         return null
-                }
+                }*/
                 return super.shouldInterceptRequest(view, request)
             }
 
