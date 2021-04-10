@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        startBypass(666,"https://kissasian.sh/",false)
+        startBypass(666,"https://www3.animeflv.net/",false)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

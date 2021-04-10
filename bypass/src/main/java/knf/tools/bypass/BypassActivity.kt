@@ -73,6 +73,7 @@ class BypassActivity : AppCompatActivity() {
                     } else {
                         Fuel.get(this@BypassActivity.url)
                             .header("User-Agent", webview.settings.userAgentString)
+                            .header("Cookie",cookies)
                             .response { _, response, _ ->
                                 Log.e("Test UA bypass", "Response code: ${response.statusCode}")
                                 lifecycleScope.launch(Dispatchers.Main) {
@@ -87,7 +88,8 @@ class BypassActivity : AppCompatActivity() {
                                         reloadCountdown.removeCallbacks(reloadRun)
                                         this@BypassActivity.finish()
                                     } else {
-                                        if (!showReload && view?.title != "Just a moment...") {
+                                        if (!showReload && view?.title?.containsAny("Just a moment...","Verifica que no eres un bot") == false) {
+                                            Log.e("Bypass", "Reload")
                                             reloadCountdown.postDelayed(reloadRun, 3000)
                                             forceReload()
                                         }
@@ -144,6 +146,14 @@ class BypassActivity : AppCompatActivity() {
         })
         super.onBackPressed()
     }
+}
+
+fun String.containsAny(vararg terms:String): Boolean{
+    for (term in terms){
+        if (this.contains(term,true))
+            return true
+    }
+    return false
 }
 
 fun AppCompatActivity.startBypass(code: Int, url: String, showReload: Boolean) {
