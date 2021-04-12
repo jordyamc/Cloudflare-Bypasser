@@ -7,9 +7,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.github.kittinunf.fuel.Fuel
@@ -73,7 +75,7 @@ class BypassActivity : AppCompatActivity() {
                     } else {
                         Fuel.get(this@BypassActivity.url)
                             .header("User-Agent", webview.settings.userAgentString)
-                            .header("Cookie",cookies)
+                            .header("Cookie", cookies)
                             .response { _, response, _ ->
                                 Log.e("Test UA bypass", "Response code: ${response.statusCode}")
                                 lifecycleScope.launch(Dispatchers.Main) {
@@ -88,7 +90,11 @@ class BypassActivity : AppCompatActivity() {
                                         reloadCountdown.removeCallbacks(reloadRun)
                                         this@BypassActivity.finish()
                                     } else {
-                                        if (!showReload && view?.title?.containsAny("Just a moment...","Verifica que no eres un bot") == false) {
+                                        if (!showReload && view?.title?.containsAny(
+                                                "Just a moment...",
+                                                "Verifica que no eres un bot"
+                                            ) == false
+                                        ) {
                                             Log.e("Bypass", "Reload")
                                             reloadCountdown.postDelayed(reloadRun, 3000)
                                             forceReload()
@@ -141,16 +147,27 @@ class BypassActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        if (webview.hasFocus()) {
+            reload.requestFocus()
+            return
+        }
         setResult(Activity.RESULT_CANCELED, Intent().apply {
             putExtra("user_agent", webview.settings.userAgentString)
         })
         super.onBackPressed()
     }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> webview.requestFocus()
+        }
+        return super.onKeyDown(keyCode, event)
+    }
 }
 
-fun String.containsAny(vararg terms:String): Boolean{
-    for (term in terms){
-        if (this.contains(term,true))
+fun String.containsAny(vararg terms: String): Boolean {
+    for (term in terms) {
+        if (this.contains(term, true))
             return true
     }
     return false
