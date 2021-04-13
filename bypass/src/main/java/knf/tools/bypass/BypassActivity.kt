@@ -24,6 +24,7 @@ class BypassActivity : AppCompatActivity() {
 
     private val url by lazy { intent.getStringExtra("url") ?: "about:blank" }
     private val showReload by lazy { intent.getBooleanExtra("showReload", false) }
+    private val useFocus by lazy { intent.getBooleanExtra("useFocus", false) }
     private val reloadCountdown = Handler(Looper.getMainLooper())
     private val reloadRun = Runnable {
         lifecycleScope.launch(Dispatchers.Main) {
@@ -37,7 +38,7 @@ class BypassActivity : AppCompatActivity() {
         setContentView(R.layout.lay_web)
         if (!showReload)
             reload.hide()
-        else
+        else if (useFocus)
             reload.requestFocus()
         webview.settings.apply {
             javaScriptEnabled = true
@@ -147,20 +148,22 @@ class BypassActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (webview.hasFocus()) {
+        if (useFocus && webview.hasFocus()) {
             reload.requestFocus()
             return
         }
         setResult(Activity.RESULT_CANCELED, Intent().apply {
             putExtra("user_agent", webview.settings.userAgentString)
+            putExtra("cookies", currentCookies())
         })
         super.onBackPressed()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> webview.requestFocus()
-        }
+        if (useFocus)
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> webview.requestFocus()
+            }
         return super.onKeyDown(keyCode, event)
     }
 }
@@ -173,23 +176,37 @@ fun String.containsAny(vararg terms: String): Boolean {
     return false
 }
 
-fun AppCompatActivity.startBypass(code: Int, url: String, showReload: Boolean) {
+fun AppCompatActivity.startBypass(
+    code: Int,
+    url: String,
+    showReload: Boolean,
+    useFocus: Boolean = false
+) {
     startActivityForResult(Intent(this, BypassActivity::class.java).apply {
         putExtra("url", url)
         putExtra("showReload", showReload)
+        putExtra("useFocus", useFocus)
     }, code)
 }
 
-fun Fragment.startBypass(code: Int, url: String, showReload: Boolean) {
+fun Fragment.startBypass(code: Int, url: String, showReload: Boolean, useFocus: Boolean = false) {
     startActivityForResult(Intent(requireContext(), BypassActivity::class.java).apply {
         putExtra("url", url)
         putExtra("showReload", showReload)
+        putExtra("useFocus", useFocus)
     }, code)
 }
 
-fun startBypass(activity: Activity, code: Int, url: String, showReload: Boolean) {
+fun startBypass(
+    activity: Activity,
+    code: Int,
+    url: String,
+    showReload: Boolean,
+    useFocus: Boolean = false
+) {
     activity.startActivityForResult(Intent(activity, BypassActivity::class.java).apply {
         putExtra("url", url)
         putExtra("showReload", showReload)
+        putExtra("useFocus", useFocus)
     }, code)
 }
