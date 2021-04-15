@@ -51,7 +51,7 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 groupId 'knf.tools'
-                artifactId 'bypass'
+                artifactId 'bypass-lib'
                 version '1.0'
                 artifact bundleReleaseAar
             }

@@ -18,6 +18,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         startBypass(666,"https://www3.animeflv.net/",true)
+        testButton.setOnClickListener {
+            startBypass(666,"https://www3.animeflv.net/",true)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

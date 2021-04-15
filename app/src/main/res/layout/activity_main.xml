@@ -13,4 +13,10 @@
         android:layout_height="wrap_content"
         android:text="Bypass test"/>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/testButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test"/>
+
 </LinearLayout>

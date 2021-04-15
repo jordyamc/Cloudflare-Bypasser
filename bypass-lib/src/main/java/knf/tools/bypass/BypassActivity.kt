@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -18,6 +19,7 @@ import com.github.kittinunf.fuel.Fuel
 import knf.kuma.uagen.randomUA
 import kotlinx.android.synthetic.main.lay_web.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class BypassActivity : AppCompatActivity() {
@@ -52,28 +54,46 @@ class BypassActivity : AppCompatActivity() {
                 view: WebView?,
                 request: WebResourceRequest?
             ): WebResourceResponse? {
-                /*request?.url?.toString()?.let {
-                    if (!it.contains("captcha"))
+                request?.url?.toString()?.let { url ->
+                    if (url.matches(".*\\?__cf_chl_\\w+_tk__=.*".toRegex())) {
+                        lifecycleScope.launch(Dispatchers.Main){
+                            delay(3000)
+                            Fuel.get(this@BypassActivity.url)
+                                .header("User-Agent", webview.settings.userAgentString)
+                                .header("Cookie", currentCookies())
+                                .response { _, response, _ ->
+                                    Log.e("Test UA bypass", "Response code: ${response.statusCode}")
+                                    lifecycleScope.launch(Dispatchers.Main) {
+                                        if (response.statusCode == 200) {
+                                            setResult(Activity.RESULT_CANCELED, Intent().apply {
+                                                putExtra(
+                                                    "user_agent",
+                                                    webview.settings.userAgentString
+                                                )
+                                                putExtra("cookies", currentCookies())
+                                            })
+                                            reloadCountdown.removeCallbacks(reloadRun)
+                                            this@BypassActivity.finish()
+                                        }
+                                    }
+                                }
+                        }
                         return null
-                }*/
+                    }
+                }
                 return super.shouldInterceptRequest(view, request)
             }
+
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 reloadCountdown.removeCallbacks(reloadRun)
                 url?.let {
-                    Log.e("Finish", it)
-                    val cookies = currentCookies()
-                    Log.e("Cookies", cookies)
-                    if (cookies.contains("cf_clearance")) {
-                        setResult(Activity.RESULT_OK, Intent().apply {
-                            putExtra("user_agent", webview.settings.userAgentString)
-                            putExtra("cookies", cookies)
-                        })
-                        reloadCountdown.removeCallbacks(reloadRun)
-                        finish()
-                    } else {
+                    if (url.matches(".*\\?__cf_chl_\\w+_tk__=.*".toRegex())){
+                        Toast.makeText(this@BypassActivity,"Finished: $url",Toast.LENGTH_LONG).show()
+                        Log.e("Finish", it)
+                        val cookies = currentCookies()
+                        Log.e("Cookies", cookies)
                         Fuel.get(this@BypassActivity.url)
                             .header("User-Agent", webview.settings.userAgentString)
                             .header("Cookie", cookies)
@@ -81,7 +101,7 @@ class BypassActivity : AppCompatActivity() {
                                 Log.e("Test UA bypass", "Response code: ${response.statusCode}")
                                 lifecycleScope.launch(Dispatchers.Main) {
                                     if (response.statusCode == 200) {
-                                        setResult(Activity.RESULT_CANCELED, Intent().apply {
+                                        setResult(Activity.RESULT_OK, Intent().apply {
                                             putExtra(
                                                 "user_agent",
                                                 webview.settings.userAgentString
@@ -97,7 +117,7 @@ class BypassActivity : AppCompatActivity() {
                                             ) == false
                                         ) {
                                             Log.e("Bypass", "Reload")
-                                            reloadCountdown.postDelayed(reloadRun, 3000)
+                                            reloadCountdown.postDelayed(reloadRun, 6000)
                                             forceReload()
                                         }
                                     }
@@ -107,22 +127,27 @@ class BypassActivity : AppCompatActivity() {
                 }
             }
 
-            override fun shouldOverrideUrlLoading(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): Boolean {
-                request?.url?.toString()?.let {
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                if (url != null) {
                     tryCount++
+                    Log.e("Reload","Tries: $tryCount")
                     if (tryCount >= 3) {
                         tryCount = 0
                         webview.settings.userAgentString = randomUA()
                     }
-                    view?.loadUrl(it)
+                    view?.loadUrl(url)
                 }
                 return false
             }
+
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): Boolean {
+                return shouldOverrideUrlLoading(view, request?.url?.toString())
+            }
         }
-        clearCookies()
+        //clearCookies()
         webview.settings.userAgentString = randomUA()
         webview.loadUrl(url)
         reload.setOnClickListener {
