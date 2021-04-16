@@ -1,18 +1,15 @@
 package knf.tools.bypass
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
-import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.github.kittinunf.fuel.Fuel
@@ -78,52 +75,48 @@ class BypassActivity : AppCompatActivity() {
                                     }
                                 }
                         }
-                        return null
+
                     }
                 }
                 return super.shouldInterceptRequest(view, request)
             }
 
-
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 reloadCountdown.removeCallbacks(reloadRun)
                 url?.let {
-                    if (url.matches(".*\\?__cf_chl_\\w+_tk__=.*".toRegex())){
-                        Toast.makeText(this@BypassActivity,"Finished: $url",Toast.LENGTH_LONG).show()
-                        Log.e("Finish", it)
-                        val cookies = currentCookies()
-                        Log.e("Cookies", cookies)
-                        Fuel.get(this@BypassActivity.url)
-                            .header("User-Agent", webview.settings.userAgentString)
-                            .header("Cookie", cookies)
-                            .response { _, response, _ ->
-                                Log.e("Test UA bypass", "Response code: ${response.statusCode}")
-                                lifecycleScope.launch(Dispatchers.Main) {
-                                    if (response.statusCode == 200) {
-                                        setResult(Activity.RESULT_OK, Intent().apply {
-                                            putExtra(
-                                                "user_agent",
-                                                webview.settings.userAgentString
-                                            )
-                                            putExtra("cookies", cookies)
-                                        })
-                                        reloadCountdown.removeCallbacks(reloadRun)
-                                        this@BypassActivity.finish()
-                                    } else {
-                                        if (!showReload && view?.title?.containsAny(
-                                                "Just a moment...",
-                                                "Verifica que no eres un bot"
-                                            ) == false
-                                        ) {
-                                            Log.e("Bypass", "Reload")
-                                            reloadCountdown.postDelayed(reloadRun, 6000)
-                                            forceReload()
-                                        }
+                    Log.e("Finish", it)
+                    val cookies = currentCookies()
+                    Log.e("Cookies", cookies)
+                    Fuel.get(this@BypassActivity.url)
+                        .header("User-Agent", webview.settings.userAgentString)
+                        .header("Cookie", cookies)
+                        .response { _, response, _ ->
+                            Log.e("Test UA bypass", "Response code: ${response.statusCode}")
+                            lifecycleScope.launch(Dispatchers.Main) {
+                                if (response.statusCode == 200) {
+                                    setResult(Activity.RESULT_OK, Intent().apply {
+                                        putExtra(
+                                            "user_agent",
+                                            webview.settings.userAgentString
+                                        )
+                                        putExtra("cookies", cookies)
+                                    })
+                                    reloadCountdown.removeCallbacks(reloadRun)
+                                    this@BypassActivity.finish()
+                                } else {
+                                    if (view?.title?.containsAny(
+                                            "Just a moment...",
+                                            "Verifica que no eres un bot"
+                                        ) == false
+                                    ) {
+                                        Log.e("Bypass", "Reload")
+                                        reloadCountdown.postDelayed(reloadRun, 6000)
+                                        forceReload()
                                     }
                                 }
                             }
-                    }
+                        }
                 }
             }
 
@@ -137,7 +130,7 @@ class BypassActivity : AppCompatActivity() {
                     }
                     view?.loadUrl(url)
                 }
-                return false
+                return super.shouldOverrideUrlLoading(view, url)
             }
 
             override fun shouldOverrideUrlLoading(
@@ -147,7 +140,7 @@ class BypassActivity : AppCompatActivity() {
                 return shouldOverrideUrlLoading(view, request?.url?.toString())
             }
         }
-        //clearCookies()
+        clearCookies()
         webview.settings.userAgentString = randomUA()
         webview.loadUrl(url)
         reload.setOnClickListener {
