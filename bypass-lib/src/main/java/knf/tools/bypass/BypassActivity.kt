@@ -8,7 +8,6 @@ import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
 import android.webkit.*
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
