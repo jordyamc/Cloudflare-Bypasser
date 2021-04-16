@@ -140,7 +140,7 @@ class BypassActivity : AppCompatActivity() {
                 return shouldOverrideUrlLoading(view, request?.url?.toString())
             }
         }
-        clearCookies()
+        //clearCookies()
         webview.settings.userAgentString = randomUA()
         webview.loadUrl(url)
         reload.setOnClickListener {
