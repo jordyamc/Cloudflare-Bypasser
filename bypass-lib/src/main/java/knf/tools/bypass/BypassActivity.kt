@@ -155,7 +155,7 @@ class BypassActivity : AppCompatActivity() {
                             webview.settings.userAgentString = randomUA()
                             Log.e("Reload", "Using new UA: ${webview.settings.userAgentString}")
                         }
-                        //view?.loadUrl(url)
+                        ///view?.loadUrl(url)
                     }
                     return super.shouldOverrideUrlLoading(view, url)
                 }
