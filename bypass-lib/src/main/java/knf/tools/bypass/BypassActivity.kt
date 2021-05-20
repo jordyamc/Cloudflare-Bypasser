@@ -27,6 +27,7 @@ class BypassActivity : AppCompatActivity() {
     private val useFocus by lazy { intent.getBooleanExtra("useFocus", false) }
     private val maxTryCount by lazy { intent.getIntExtra("maxTryCount", 3) }
     private val reloadOnCaptcha by lazy { intent.getBooleanExtra("reloadOnCaptcha", false) }
+    private val clearCookiesAtStart by lazy { intent.getBooleanExtra("clearCookiesAtStart", false) }
     private val reloadCountdown = Handler(Looper.getMainLooper())
     private var dialog: BottomSheetDialog? = null
     private val reloadRun = Runnable {
@@ -41,11 +42,11 @@ class BypassActivity : AppCompatActivity() {
             setTheme(R.style.Theme_Transparent)
         super.onCreate(savedInstanceState)
         layBinding.apply {
-            if (showReload){
+            if (showReload) {
                 setContentView(root)
                 if (useFocus)
                     reload.requestFocus()
-            }else {
+            } else {
                 reload.hide()
                 dialog = BottomSheetDialog(this@BypassActivity).apply {
                     setContentView(layBinding.root)
@@ -67,19 +68,22 @@ class BypassActivity : AppCompatActivity() {
                     request: WebResourceRequest?
                 ): WebResourceResponse? {
                     request?.url?.toString()?.let { url ->
-                        if (url.contains("captcha") && reloadOnCaptcha){
-                            lifecycleScope.launch(Dispatchers.Main){
+                        if (url.contains("captcha") && reloadOnCaptcha) {
+                            lifecycleScope.launch(Dispatchers.Main) {
                                 forceReload()
                             }
                         }
                         if (url.matches(".*\\?__cf_chl_\\w+_tk__=.*".toRegex())) {
-                            lifecycleScope.launch(Dispatchers.Main){
+                            lifecycleScope.launch(Dispatchers.Main) {
                                 delay(3000)
                                 Fuel.get(this@BypassActivity.url)
                                     .header("User-Agent", webview.settings.userAgentString)
                                     .header("Cookie", currentCookies())
                                     .response { _, response, _ ->
-                                        Log.e("Test UA bypass", "Response code: ${response.statusCode}")
+                                        Log.e(
+                                            "Test UA bypass",
+                                            "Response code: ${response.statusCode}"
+                                        )
                                         lifecycleScope.launch(Dispatchers.Main) {
                                             if (response.statusCode == 200) {
                                                 setResult(Activity.RESULT_CANCELED, Intent().apply {
@@ -145,11 +149,11 @@ class BypassActivity : AppCompatActivity() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                     if (url != null) {
                         tryCount++
-                        Log.e("Reload","Tries: $tryCount")
+                        Log.e("Reload", "Tries: $tryCount")
                         if (tryCount >= maxTryCount) {
                             tryCount = 0
                             webview.settings.userAgentString = randomUA()
-                            Log.e("Reload","Using new UA: ${webview.settings.userAgentString}")
+                            Log.e("Reload", "Using new UA: ${webview.settings.userAgentString}")
                         }
                         //view?.loadUrl(url)
                     }
@@ -163,7 +167,8 @@ class BypassActivity : AppCompatActivity() {
                     return shouldOverrideUrlLoading(view, request?.url?.toString())
                 }
             }
-            clearCookies()
+            if (clearCookiesAtStart)
+                clearCookies()
             webview.settings.userAgentString = randomUA()
             webview.loadUrl(url)
             reload.setOnClickListener {
@@ -225,7 +230,8 @@ fun AppCompatActivity.startBypass(
     showReload: Boolean,
     useFocus: Boolean = false,
     maxTryCount: Int = 3,
-    reloadOnCaptcha: Boolean = false
+    reloadOnCaptcha: Boolean = false,
+    clearCookiesAtStart: Boolean = false
 ) {
     startActivityForResult(Intent(this, BypassActivity::class.java).apply {
         putExtra("url", url)
@@ -233,6 +239,7 @@ fun AppCompatActivity.startBypass(
         putExtra("useFocus", useFocus)
         putExtra("maxTryCount", maxTryCount)
         putExtra("reloadOnCaptcha", reloadOnCaptcha)
+        putExtra("clearCookiesAtStart", clearCookiesAtStart)
     }, code)
 }
 
@@ -242,7 +249,8 @@ fun Fragment.startBypass(
     showReload: Boolean,
     useFocus: Boolean = false,
     maxTryCount: Int = 3,
-    reloadOnCaptcha: Boolean = false
+    reloadOnCaptcha: Boolean = false,
+    clearCookiesAtStart: Boolean = false
 ) {
     startActivityForResult(Intent(requireContext(), BypassActivity::class.java).apply {
         putExtra("url", url)
@@ -250,6 +258,7 @@ fun Fragment.startBypass(
         putExtra("useFocus", useFocus)
         putExtra("maxTryCount", maxTryCount)
         putExtra("reloadOnCaptcha", reloadOnCaptcha)
+        putExtra("clearCookiesAtStart", clearCookiesAtStart)
     }, code)
 }
 
@@ -260,7 +269,8 @@ fun startBypass(
     showReload: Boolean,
     useFocus: Boolean = false,
     maxTryCount: Int = 3,
-    reloadOnCaptcha: Boolean = false
+    reloadOnCaptcha: Boolean = false,
+    clearCookiesAtStart: Boolean = false
 ) {
     activity.startActivityForResult(Intent(activity, BypassActivity::class.java).apply {
         putExtra("url", url)
@@ -268,5 +278,6 @@ fun startBypass(
         putExtra("useFocus", useFocus)
         putExtra("maxTryCount", maxTryCount)
         putExtra("reloadOnCaptcha", reloadOnCaptcha)
+        putExtra("clearCookiesAtStart", clearCookiesAtStart)
     }, code)
 }
