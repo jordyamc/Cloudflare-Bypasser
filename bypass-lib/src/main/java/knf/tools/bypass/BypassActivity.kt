@@ -9,28 +9,29 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
-import android.view.LayoutInflater
 import android.webkit.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.github.kittinunf.fuel.Fuel
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import knf.kuma.uagen.randomUA
-import knf.tools.bypass.databinding.LayWebBinding
-import knf.tools.bypass.databinding.LayWebShortBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.Headers
+import okhttp3.Headers.Companion.toHeaders
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 class BypassActivity : AppCompatActivity() {
 
-    private val layBinding by lazy { layoutInflater.inflate(R.layout.lay_web,null) }
+    private val layBinding by lazy { layoutInflater.inflate(R.layout.lay_web, null) }
     private val reload by lazy<FloatingActionButton> { layBinding.findViewById(R.id.reload) }
-    private val layBindingShort by lazy { layoutInflater.inflate(R.layout.lay_web_short,null) }
+    private val layBindingShort by lazy { layoutInflater.inflate(R.layout.lay_web_short, null) }
     private val url by lazy { intent.getStringExtra("url") ?: "about:blank" }
     private val showReload by lazy { intent.getBooleanExtra("showReload", false) }
     private val useFocus by lazy { intent.getBooleanExtra("useFocus", false) }
@@ -38,6 +39,7 @@ class BypassActivity : AppCompatActivity() {
     private val reloadOnCaptcha by lazy { intent.getBooleanExtra("reloadOnCaptcha", false) }
     private val clearCookiesAtStart by lazy { intent.getBooleanExtra("clearCookiesAtStart", false) }
     private val dialogStyle by lazy { intent.getIntExtra("dialogStyle", 0) }
+    private val okHttpClient by lazy { OkHttpClient.Builder().build() }
     private val reloadCountdown = Handler(Looper.getMainLooper())
     private var dialog: AppCompatDialog? = null
     private lateinit var webview: WebView
@@ -75,7 +77,7 @@ class BypassActivity : AppCompatActivity() {
                     }
                     show()
                 }
-            }else {
+            } else {
                 dialog = AlertDialog.Builder(this@BypassActivity).apply {
                     setContentView(layBindingShort)
                 }.create().also {
@@ -100,36 +102,6 @@ class BypassActivity : AppCompatActivity() {
                             forceReload()
                         }
                     }
-                    if (url.matches(".*\\?__cf_chl_\\w+_tk__=.*".toRegex())) {
-                        lifecycleScope.launch(Dispatchers.Main) {
-                            delay(3000)
-                            Fuel.get(this@BypassActivity.url)
-                                .header("User-Agent", webview.settings.userAgentString)
-                                .header("Cookie", currentCookies())
-                                .response { _, response, _ ->
-                                    Log.e(
-                                        "Test UA bypass",
-                                        "Response code: ${response.statusCode}"
-                                    )
-                                    lifecycleScope.launch(Dispatchers.Main) {
-                                        if (response.statusCode == 200) {
-                                            setResult(Activity.RESULT_CANCELED, Intent().apply {
-                                                putExtra(
-                                                    "user_agent",
-                                                    webview.settings.userAgentString
-                                                )
-                                                putExtra("cookies", currentCookies())
-                                                putExtra("finishTime", System.currentTimeMillis() - startTime)
-                                            })
-                                            reloadCountdown.removeCallbacks(reloadRun)
-                                            dialog?.dismiss()
-                                            this@BypassActivity.finish()
-                                        }
-                                    }
-                                }
-                        }
-
-                    }
                 }
                 return super.shouldInterceptRequest(view, request)
             }
@@ -141,37 +113,37 @@ class BypassActivity : AppCompatActivity() {
                     Log.e("Finish", it)
                     val cookies = currentCookies()
                     Log.e("Cookies", cookies)
-                    Fuel.get(this@BypassActivity.url)
-                        .header("User-Agent", webview.settings.userAgentString)
-                        .header("Cookie", cookies)
-                        .response { _, response, _ ->
-                            Log.e("Test UA bypass", "Response code: ${response.statusCode}")
-                            lifecycleScope.launch(Dispatchers.Main) {
-                                if (response.statusCode == 200) {
-                                    setResult(Activity.RESULT_OK, Intent().apply {
-                                        putExtra(
-                                            "user_agent",
-                                            webview.settings.userAgentString
-                                        )
-                                        putExtra("cookies", cookies)
-                                        putExtra("finishTime", System.currentTimeMillis() - startTime)
-                                    })
-                                    reloadCountdown.removeCallbacks(reloadRun)
-                                    dialog?.dismiss()
-                                    this@BypassActivity.finish()
-                                } else {
-                                    if (view?.title?.containsAny(
-                                            "Just a moment...",
-                                            "Verifica que no eres un bot"
-                                        ) == false
-                                    ) {
-                                        Log.e("Bypass", "Reload")
-                                        reloadCountdown.postDelayed(reloadRun, 6000)
-                                        forceReload()
-                                    }
-                                }
+                    val requestHeaders = mapOf(
+                        "User-Agent" to webview.settings.userAgentString,
+                        "Cookie" to cookies
+                    )
+                    lifecycleScope.launch {
+                        val response = withContext(Dispatchers.IO) { okHttpClient.newCall(Request.Builder().url(this@BypassActivity.url).headers(requestHeaders.toHeaders()).build()).execute() }
+                        Log.e("Test UA bypass", "Response code: ${response.code}")
+                        if (response.code == 200){
+                            setResult(Activity.RESULT_OK, Intent().apply {
+                                putExtra(
+                                    "user_agent",
+                                    webview.settings.userAgentString
+                                )
+                                putExtra("cookies", cookies)
+                                putExtra("finishTime", System.currentTimeMillis() - startTime)
+                            })
+                            reloadCountdown.removeCallbacks(reloadRun)
+                            dialog?.dismiss()
+                            this@BypassActivity.finish()
+                        }else{
+                            if (view?.title?.containsAny(
+                                    "Just a moment...",
+                                    "Verifica que no eres un bot"
+                                ) == false
+                            ) {
+                                Log.e("Bypass", "Reload")
+                                reloadCountdown.postDelayed(reloadRun, 6000)
+                                forceReload()
                             }
                         }
+                    }
                 }
             }
 
