@@ -41,12 +41,12 @@ class BypassActivity : AppCompatActivity() {
     private val reloadCountdown = Handler(Looper.getMainLooper())
     private var dialog: AppCompatDialog? = null
     private lateinit var webview: WebView
+    private var tryCount = 0
     private val reloadRun = Runnable {
         lifecycleScope.launch(Dispatchers.Main) {
             forceReload()
         }
     }
-    private var tryCount = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (!showReload)
