@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.github.kittinunf.fuel.httpGet
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import knf.kuma.uagen.randomUA
@@ -22,10 +23,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.Headers
-import okhttp3.Headers.Companion.toHeaders
-import okhttp3.OkHttpClient
-import okhttp3.Request
 
 class BypassActivity : AppCompatActivity() {
 
@@ -39,7 +36,6 @@ class BypassActivity : AppCompatActivity() {
     private val reloadOnCaptcha by lazy { intent.getBooleanExtra("reloadOnCaptcha", false) }
     private val clearCookiesAtStart by lazy { intent.getBooleanExtra("clearCookiesAtStart", false) }
     private val dialogStyle by lazy { intent.getIntExtra("dialogStyle", 0) }
-    private val okHttpClient by lazy { OkHttpClient.Builder().build() }
     private val reloadCountdown = Handler(Looper.getMainLooper())
     private var dialog: AppCompatDialog? = null
     private lateinit var webview: WebView
@@ -118,9 +114,9 @@ class BypassActivity : AppCompatActivity() {
                         "Cookie" to cookies
                     )
                     lifecycleScope.launch {
-                        val response = withContext(Dispatchers.IO) { okHttpClient.newCall(Request.Builder().url(this@BypassActivity.url).headers(requestHeaders.toHeaders()).build()).execute() }
-                        Log.e("Test UA bypass", "Response code: ${response.code}")
-                        if (response.code == 200){
+                        val (_,response) = withContext(Dispatchers.IO) { this@BypassActivity.url.httpGet().header(requestHeaders).responseString() }
+                        Log.e("Test UA bypass", "Response code: ${response.statusCode}")
+                        if (response.statusCode == 200){
                             setResult(Activity.RESULT_OK, Intent().apply {
                                 putExtra(
                                     "user_agent",
@@ -151,7 +147,7 @@ class BypassActivity : AppCompatActivity() {
                 if (url != null) {
                     tryCount++
                     Log.e("Reload", "Tries: $tryCount")
-                    if (tryCount >= maxTryCount) {
+                    if (tryCount > maxTryCount) {
                         tryCount = 0
                         webview.settings.userAgentString = randomUA()
                         Log.e("Reload", "Using new UA: ${webview.settings.userAgentString}")
