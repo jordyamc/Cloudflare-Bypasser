@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         testButton.setOnClickListener {
-            startBypass(666, "https://www3.animeflv.net/", false, maxTryCount = 3, reloadOnCaptcha = true)
+            startBypass(666, "https://www3.animeflv.net/", showReload = false, maxTryCount = 3, reloadOnCaptcha = true, dialogStyle = 1)
         }
     }
 
