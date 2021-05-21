@@ -17,7 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.github.kittinunf.fuel.httpGet
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import knf.kuma.uagen.randomUA
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,7 +26,7 @@ import kotlinx.coroutines.withContext
 class BypassActivity : AppCompatActivity() {
 
     private val layBinding by lazy { layoutInflater.inflate(R.layout.lay_web, null) }
-    private val reload by lazy<FloatingActionButton> { layBinding.findViewById(R.id.reload) }
+    private val reload by lazy<ExtendedFloatingActionButton> { layBinding.findViewById(R.id.reload) }
     private val layBindingShort by lazy { layoutInflater.inflate(R.layout.lay_web_short, null) }
     private val url by lazy { intent.getStringExtra("url") ?: "about:blank" }
     private val showReload by lazy { intent.getBooleanExtra("showReload", false) }
