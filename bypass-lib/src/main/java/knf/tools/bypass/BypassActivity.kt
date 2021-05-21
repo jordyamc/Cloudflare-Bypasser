@@ -20,7 +20,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import knf.kuma.uagen.randomUA
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -31,6 +30,7 @@ class BypassActivity : AppCompatActivity() {
     private val layBindingShort by lazy { layoutInflater.inflate(R.layout.lay_web_short, null) }
     private val url by lazy { intent.getStringExtra("url") ?: "about:blank" }
     private val showReload by lazy { intent.getBooleanExtra("showReload", false) }
+    private val useDialog by lazy { intent.getBooleanExtra("useDialog", false) }
     private val useFocus by lazy { intent.getBooleanExtra("useFocus", false) }
     private val maxTryCount by lazy { intent.getIntExtra("maxTryCount", 3) }
     private val reloadOnCaptcha by lazy { intent.getBooleanExtra("reloadOnCaptcha", false) }
@@ -47,15 +47,19 @@ class BypassActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (!showReload)
+        if (useDialog)
             setTheme(R.style.Theme_Transparent)
         super.onCreate(savedInstanceState)
-        if (showReload) {
+        if (!useDialog) {
             setContentView(layBinding)
-            if (useFocus)
-                reload.requestFocus()
-            reload.setOnClickListener {
-                forceReload()
+            if (showReload){
+                if (useFocus)
+                    reload.requestFocus()
+                reload.setOnClickListener {
+                    forceReload()
+                }
+            }else{
+                reload.hide()
             }
             webview = layBinding.findViewById(R.id.webview)
         } else {
@@ -63,7 +67,6 @@ class BypassActivity : AppCompatActivity() {
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             webview = layBindingShort.findViewById(R.id.webview)
             if (dialogStyle == 0) {
-                //layBinding.reload.hide()
                 dialog = BottomSheetDialog(this@BypassActivity).apply {
                     setContentView(layBindingShort)
                     setCanceledOnTouchOutside(false)
@@ -226,6 +229,7 @@ fun AppCompatActivity.startBypass(
     maxTryCount: Int = 3,
     reloadOnCaptcha: Boolean = false,
     clearCookiesAtStart: Boolean = false,
+    useDialog: Boolean = false,
     dialogStyle: Int = 0
 ) {
     startActivityForResult(Intent(this, BypassActivity::class.java).apply {
@@ -235,6 +239,7 @@ fun AppCompatActivity.startBypass(
         putExtra("maxTryCount", maxTryCount)
         putExtra("reloadOnCaptcha", reloadOnCaptcha)
         putExtra("clearCookiesAtStart", clearCookiesAtStart)
+        putExtra("useDialog", useDialog)
         putExtra("dialogStyle", dialogStyle)
     }, code)
 }
@@ -247,6 +252,7 @@ fun Fragment.startBypass(
     maxTryCount: Int = 3,
     reloadOnCaptcha: Boolean = false,
     clearCookiesAtStart: Boolean = false,
+    useDialog: Boolean = false,
     dialogStyle: Int = 0
 ) {
     startActivityForResult(Intent(requireContext(), BypassActivity::class.java).apply {
@@ -256,6 +262,7 @@ fun Fragment.startBypass(
         putExtra("maxTryCount", maxTryCount)
         putExtra("reloadOnCaptcha", reloadOnCaptcha)
         putExtra("clearCookiesAtStart", clearCookiesAtStart)
+        putExtra("useDialog", useDialog)
         putExtra("dialogStyle", dialogStyle)
     }, code)
 }
@@ -269,6 +276,7 @@ fun startBypass(
     maxTryCount: Int = 3,
     reloadOnCaptcha: Boolean = false,
     clearCookiesAtStart: Boolean = false,
+    useDialog: Boolean = false,
     dialogStyle: Int = 0
 ) {
     activity.startActivityForResult(Intent(activity, BypassActivity::class.java).apply {
@@ -278,6 +286,7 @@ fun startBypass(
         putExtra("maxTryCount", maxTryCount)
         putExtra("reloadOnCaptcha", reloadOnCaptcha)
         putExtra("clearCookiesAtStart", clearCookiesAtStart)
+        putExtra("useDialog", useDialog)
         putExtra("dialogStyle", dialogStyle)
     }, code)
 }
