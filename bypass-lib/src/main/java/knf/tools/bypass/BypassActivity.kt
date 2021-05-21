@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.webkit.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +18,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.github.kittinunf.fuel.Fuel
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import knf.kuma.uagen.randomUA
 import knf.tools.bypass.databinding.LayWebBinding
 import knf.tools.bypass.databinding.LayWebShortBinding
@@ -26,8 +28,9 @@ import kotlinx.coroutines.launch
 
 class BypassActivity : AppCompatActivity() {
 
-    private val layBinding by lazy { LayWebBinding.inflate(layoutInflater) }
-    private val layBindingShort by lazy { LayWebShortBinding.inflate(layoutInflater) }
+    private val layBinding by lazy { layoutInflater.inflate(R.layout.lay_web,null) }
+    private val reload by lazy<FloatingActionButton> { layBinding.findViewById(R.id.reload) }
+    private val layBindingShort by lazy { layoutInflater.inflate(R.layout.lay_web_short,null) }
     private val url by lazy { intent.getStringExtra("url") ?: "about:blank" }
     private val showReload by lazy { intent.getBooleanExtra("showReload", false) }
     private val useFocus by lazy { intent.getBooleanExtra("useFocus", false) }
@@ -50,21 +53,21 @@ class BypassActivity : AppCompatActivity() {
             setTheme(R.style.Theme_Transparent)
         super.onCreate(savedInstanceState)
         if (showReload) {
-            setContentView(layBinding.root)
+            setContentView(layBinding)
             if (useFocus)
-                layBinding.reload.requestFocus()
-            layBinding.reload.setOnClickListener {
+                reload.requestFocus()
+            reload.setOnClickListener {
                 forceReload()
             }
-            webview = layBinding.webview
+            webview = layBinding.findViewById(R.id.webview)
         } else {
             title = " "
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            webview = layBindingShort.findViewById(R.id.webview)
             if (dialogStyle == 0) {
                 //layBinding.reload.hide()
-                webview = layBindingShort.webview
                 dialog = BottomSheetDialog(this@BypassActivity).apply {
-                    setContentView(layBindingShort.root)
+                    setContentView(layBindingShort)
                     setCanceledOnTouchOutside(false)
                     behavior.apply {
                         expandedOffset = 400
@@ -73,9 +76,8 @@ class BypassActivity : AppCompatActivity() {
                     show()
                 }
             }else {
-                webview = layBindingShort.webview
                 dialog = AlertDialog.Builder(this@BypassActivity).apply {
-                    setContentView(layBindingShort.root)
+                    setContentView(layBindingShort)
                 }.create().also {
                     it.setCanceledOnTouchOutside(false)
                     it.show()
@@ -220,7 +222,7 @@ class BypassActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         if (useFocus && webview.hasFocus() && showReload) {
-            layBinding.reload.requestFocus()
+            reload.requestFocus()
             return
         }
         dialog?.dismiss()
@@ -234,7 +236,7 @@ class BypassActivity : AppCompatActivity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (useFocus)
             when (keyCode) {
-                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> layBinding.webview.requestFocus()
+                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> webview.requestFocus()
             }
         return super.onKeyDown(keyCode, event)
     }
