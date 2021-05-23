@@ -29,6 +29,7 @@ class BypassActivity : AppCompatActivity() {
     private val reload by lazy<ExtendedFloatingActionButton> { layBinding.findViewById(R.id.reload) }
     private val layBindingShort by lazy { layoutInflater.inflate(R.layout.lay_web_short, null) }
     private val url by lazy { intent.getStringExtra("url") ?: "about:blank" }
+    private val lastUA by lazy { intent.getStringExtra("lastUA") ?: randomUA() }
     private val showReload by lazy { intent.getBooleanExtra("showReload", false) }
     private val useDialog by lazy { intent.getBooleanExtra("useDialog", false) }
     private val useFocus by lazy { intent.getBooleanExtra("useFocus", false) }
@@ -169,7 +170,7 @@ class BypassActivity : AppCompatActivity() {
         }
         if (clearCookiesAtStart)
             clearCookies()
-        webview.settings.userAgentString = randomUA()
+        webview.settings.userAgentString = lastUA
         webview.loadUrl(url)
     }
 
@@ -224,6 +225,7 @@ fun String.containsAny(vararg terms: String): Boolean {
 fun AppCompatActivity.startBypass(
     code: Int,
     url: String,
+    lastUA: String? = randomUA(),
     showReload: Boolean,
     useFocus: Boolean = false,
     maxTryCount: Int = 3,
@@ -234,6 +236,7 @@ fun AppCompatActivity.startBypass(
 ) {
     startActivityForResult(Intent(this, BypassActivity::class.java).apply {
         putExtra("url", url)
+        putExtra("lastUA", lastUA)
         putExtra("showReload", showReload)
         putExtra("useFocus", useFocus)
         putExtra("maxTryCount", maxTryCount)
@@ -247,6 +250,7 @@ fun AppCompatActivity.startBypass(
 fun Fragment.startBypass(
     code: Int,
     url: String,
+    lastUA: String? = randomUA(),
     showReload: Boolean,
     useFocus: Boolean = false,
     maxTryCount: Int = 3,
@@ -257,6 +261,7 @@ fun Fragment.startBypass(
 ) {
     startActivityForResult(Intent(requireContext(), BypassActivity::class.java).apply {
         putExtra("url", url)
+        putExtra("lastUA", lastUA)
         putExtra("showReload", showReload)
         putExtra("useFocus", useFocus)
         putExtra("maxTryCount", maxTryCount)
@@ -271,6 +276,7 @@ fun startBypass(
     activity: Activity,
     code: Int,
     url: String,
+    lastUA: String? = randomUA(),
     showReload: Boolean,
     useFocus: Boolean = false,
     maxTryCount: Int = 3,
@@ -281,6 +287,7 @@ fun startBypass(
 ) {
     activity.startActivityForResult(Intent(activity, BypassActivity::class.java).apply {
         putExtra("url", url)
+        putExtra("lastUA", lastUA)
         putExtra("showReload", showReload)
         putExtra("useFocus", useFocus)
         putExtra("maxTryCount", maxTryCount)
