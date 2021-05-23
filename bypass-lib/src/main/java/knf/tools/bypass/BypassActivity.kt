@@ -91,7 +91,6 @@ class BypassActivity : AppCompatActivity() {
         }
         val startTime = System.currentTimeMillis()
         webview.webViewClient = object : WebViewClient() {
-
             override fun shouldInterceptRequest(
                 view: WebView?,
                 request: WebResourceRequest?
