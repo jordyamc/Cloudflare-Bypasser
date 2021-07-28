@@ -1,6 +1,7 @@
 package knf.tools.bypass
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -10,6 +11,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
 import android.webkit.*
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDialog
@@ -53,13 +55,13 @@ class BypassActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         if (!useDialog) {
             setContentView(layBinding)
-            if (showReload){
+            if (showReload) {
                 if (useFocus)
                     reload.requestFocus()
                 reload.setOnClickListener {
                     forceReload()
                 }
-            }else{
+            } else {
                 reload.hide()
             }
             webview = layBinding.findViewById(R.id.webview)
@@ -117,9 +119,12 @@ class BypassActivity : AppCompatActivity() {
                         "Cookie" to cookies
                     )
                     lifecycleScope.launch {
-                        val (_,response) = withContext(Dispatchers.IO) { this@BypassActivity.url.httpGet().header(requestHeaders).responseString() }
+                        val (_, response) = withContext(Dispatchers.IO) {
+                            this@BypassActivity.url.httpGet().header(requestHeaders)
+                                .responseString()
+                        }
                         Log.e("Test UA bypass", "Response code: ${response.statusCode}")
-                        if (response.statusCode == 200){
+                        if (response.statusCode == 200) {
                             setResult(Activity.RESULT_OK, Intent().apply {
                                 putExtra(
                                     "user_agent",
@@ -131,7 +136,7 @@ class BypassActivity : AppCompatActivity() {
                             reloadCountdown.removeCallbacks(reloadRun)
                             dialog?.dismiss()
                             this@BypassActivity.finish()
-                        }else{
+                        } else {
                             if (view?.title?.containsAny(
                                     "Just a moment...",
                                     "Verifica que no eres un bot"
@@ -219,6 +224,48 @@ fun String.containsAny(vararg terms: String): Boolean {
             return true
     }
     return false
+}
+
+data class Result(val userAgent: String, val cookies: String)
+
+data class Request(
+    val url: String,
+    val lastUA: String? = randomUA(),
+    val showReload: Boolean,
+    val useFocus: Boolean = false,
+    val maxTryCount: Int = 3,
+    val reloadOnCaptcha: Boolean = false,
+    val clearCookiesAtStart: Boolean = false,
+    val useDialog: Boolean = false,
+    val dialogStyle: Int = 0
+)
+
+class BypassContract : ActivityResultContract<Request, Result>() {
+    override fun createIntent(context: Context, input: Request?): Intent {
+        val intent = Intent(context, BypassActivity::class.java)
+        return input?.let {
+            with(it) {
+                intent.apply {
+                    putExtra("url", url)
+                    putExtra("lastUA", lastUA)
+                    putExtra("showReload", showReload)
+                    putExtra("useFocus", useFocus)
+                    putExtra("maxTryCount", maxTryCount)
+                    putExtra("reloadOnCaptcha", reloadOnCaptcha)
+                    putExtra("clearCookiesAtStart", clearCookiesAtStart)
+                    putExtra("useDialog", useDialog)
+                    putExtra("dialogStyle", dialogStyle)
+                }
+            }
+        } ?: intent
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Result {
+        return Result(
+            intent?.getStringExtra("user_agent") ?: randomUA(),
+            intent?.getStringExtra("cookies") ?: ""
+        )
+    }
 }
 
 fun AppCompatActivity.startBypass(

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Bypass tester</string>
+    <string-array name="dialog_type">
+        <item>Default</item>
+        <item>Sheet</item>
+    </string-array>
 </resources>

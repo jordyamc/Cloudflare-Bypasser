@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DesignSurface">
-    <option name="filePathToZoomLevelMap">
-      <map>
-        <entry key="..\:/Programming/Proyectos/BypassTester/app/src/main/res/layout/activity_main.xml" value="0.17831813576494426" />
-        <entry key="..\:/Programming/Proyectos/BypassTester/bypass-lib/src/main/res/layout/lay_web.xml" value="0.115625" />
-        <entry key="..\:/Programming/Proyectos/BypassTester/bypass-lib/src/main/res/layout/lay_web_short.xml" value="0.13425925925925927" />
-        <entry key="..\:/Programming/Proyectos/BypassTester/bypass-lib/src/main/res/layout/lay_web_test.xml" value="0.36666666666666664" />
-        <entry key="..\:/Programming/Proyectos/BypassTester/bypass/src/main/res/drawable/ic_cursor.xml" value="0.3828125" />
-        <entry key="..\:/Programming/Proyectos/BypassTester/bypass/src/main/res/layout/lay_web.xml" value="0.36666666666666664" />
-      </map>
-    </option>
-  </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

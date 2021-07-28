@@ -13,6 +13,58 @@
         android:layout_height="wrap_content"
         android:text="Bypass test"/>
 
+    <CheckBox
+        android:id="@+id/ck_show_reload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show reload"/>
+
+    <CheckBox
+        android:id="@+id/ck_skip_captcha"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Skip captcha"/>
+
+    <CheckBox
+        android:id="@+id/ck_clear_cookies"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear cookies"/>
+
+    <CheckBox
+        android:id="@+id/ck_use_dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show dialog"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dialog type"/>
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggle_dialog_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:singleSelection="true"
+        app:selectionRequired="true"
+        app:checkedButton="@+id/dialog_default">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/dialog_default"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Default" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/dialog_sheet"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sheet" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/testButton"
         android:layout_width="wrap_content"
