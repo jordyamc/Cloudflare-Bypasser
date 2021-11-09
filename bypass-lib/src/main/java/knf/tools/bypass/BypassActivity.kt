@@ -88,6 +88,7 @@ class BypassActivity : AppCompatActivity() {
                 }
             }
         }
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webview, true);
         webview.settings.apply {
             javaScriptEnabled = true
         }

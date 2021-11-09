@@ -4,6 +4,5 @@
 
     <application>
         <activity android:name=".BypassActivity" android:theme="@style/Theme.BypassTester"/>
-        <activity android:name=".BypassActivityTest" />
     </application>
 </manifest>
