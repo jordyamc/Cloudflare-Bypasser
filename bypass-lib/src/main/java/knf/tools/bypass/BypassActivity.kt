@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDialog
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.github.kittinunf.fuel.httpGet
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -24,6 +25,8 @@ import knf.kuma.uagen.randomUA
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 class BypassActivity : AppCompatActivity() {
 
@@ -33,10 +36,10 @@ class BypassActivity : AppCompatActivity() {
     private val url by lazy { intent.getStringExtra("url") ?: "about:blank" }
     private val lastUA by lazy { intent.getStringExtra("lastUA") ?: randomUA() }
     private val showReload by lazy { intent.getBooleanExtra("showReload", false) }
-    private val useDialog by lazy { intent.getBooleanExtra("useDialog", false) }
+    private val displayType by lazy { intent.getIntExtra("displayType", 0) }
     private val useFocus by lazy { intent.getBooleanExtra("useFocus", false) }
     private val maxTryCount by lazy { intent.getIntExtra("maxTryCount", 3) }
-    private val reloadOnCaptcha by lazy { intent.getBooleanExtra("reloadOnCaptcha", false) }
+    private var reloadOnCaptcha by lazyMutable { intent.getBooleanExtra("reloadOnCaptcha", false) }
     private val clearCookiesAtStart by lazy { intent.getBooleanExtra("clearCookiesAtStart", false) }
     private val dialogStyle by lazy { intent.getIntExtra("dialogStyle", 0) }
     private val reloadCountdown = Handler(Looper.getMainLooper())
@@ -50,10 +53,10 @@ class BypassActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (useDialog)
+        if (displayType > 0)
             setTheme(R.style.Theme_Transparent)
         super.onCreate(savedInstanceState)
-        if (!useDialog) {
+        if (displayType == DisplayType.ACTIVITY) {
             setContentView(layBinding)
             if (showReload) {
                 if (useFocus)
@@ -65,7 +68,7 @@ class BypassActivity : AppCompatActivity() {
                 reload.hide()
             }
             webview = layBinding.findViewById(R.id.webview)
-        } else {
+        } else if (displayType == DisplayType.DIALOG) {
             title = " "
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             webview = layBindingShort.findViewById(R.id.webview)
@@ -87,7 +90,11 @@ class BypassActivity : AppCompatActivity() {
                     it.show()
                 }
             }
+        } else {
+            reload.hide()
+            reloadOnCaptcha = true
         }
+        CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(webview, true);
         webview.settings.apply {
             javaScriptEnabled = true
@@ -237,7 +244,7 @@ data class Request(
     val maxTryCount: Int = 3,
     val reloadOnCaptcha: Boolean = false,
     val clearCookiesAtStart: Boolean = false,
-    val useDialog: Boolean = false,
+    val displayType: Int = 0,
     val dialogStyle: Int = 0
 )
 
@@ -254,7 +261,7 @@ class BypassContract : ActivityResultContract<Request, Result>() {
                     putExtra("maxTryCount", maxTryCount)
                     putExtra("reloadOnCaptcha", reloadOnCaptcha)
                     putExtra("clearCookiesAtStart", clearCookiesAtStart)
-                    putExtra("useDialog", useDialog)
+                    putExtra("displayType", displayType)
                     putExtra("dialogStyle", dialogStyle)
                 }
             }
@@ -269,78 +276,58 @@ class BypassContract : ActivityResultContract<Request, Result>() {
     }
 }
 
-fun AppCompatActivity.startBypass(
+
+object DisplayType {
+    const val ACTIVITY = 0
+    const val DIALOG = 1
+    const val BACKGROUND = 2
+}
+
+
+fun FragmentActivity.startBypass(
     code: Int,
-    url: String,
-    lastUA: String? = randomUA(),
-    showReload: Boolean,
-    useFocus: Boolean = false,
-    maxTryCount: Int = 3,
-    reloadOnCaptcha: Boolean = false,
-    clearCookiesAtStart: Boolean = false,
-    useDialog: Boolean = false,
-    dialogStyle: Int = 0
+    request: Request
 ) {
     startActivityForResult(Intent(this, BypassActivity::class.java).apply {
-        putExtra("url", url)
-        putExtra("lastUA", lastUA)
-        putExtra("showReload", showReload)
-        putExtra("useFocus", useFocus)
-        putExtra("maxTryCount", maxTryCount)
-        putExtra("reloadOnCaptcha", reloadOnCaptcha)
-        putExtra("clearCookiesAtStart", clearCookiesAtStart)
-        putExtra("useDialog", useDialog)
-        putExtra("dialogStyle", dialogStyle)
+        putExtra("url", request.url)
+        putExtra("lastUA", request.lastUA)
+        putExtra("showReload", request.showReload)
+        putExtra("useFocus", request.useFocus)
+        putExtra("maxTryCount", request.maxTryCount)
+        putExtra("reloadOnCaptcha", request.reloadOnCaptcha)
+        putExtra("clearCookiesAtStart", request.clearCookiesAtStart)
+        putExtra("displayType", request.displayType)
+        putExtra("dialogStyle", request.dialogStyle)
     }, code)
 }
 
 fun Fragment.startBypass(
     code: Int,
-    url: String,
-    lastUA: String? = randomUA(),
-    showReload: Boolean,
-    useFocus: Boolean = false,
-    maxTryCount: Int = 3,
-    reloadOnCaptcha: Boolean = false,
-    clearCookiesAtStart: Boolean = false,
-    useDialog: Boolean = false,
-    dialogStyle: Int = 0
+    request: Request
 ) {
     startActivityForResult(Intent(requireContext(), BypassActivity::class.java).apply {
-        putExtra("url", url)
-        putExtra("lastUA", lastUA)
-        putExtra("showReload", showReload)
-        putExtra("useFocus", useFocus)
-        putExtra("maxTryCount", maxTryCount)
-        putExtra("reloadOnCaptcha", reloadOnCaptcha)
-        putExtra("clearCookiesAtStart", clearCookiesAtStart)
-        putExtra("useDialog", useDialog)
-        putExtra("dialogStyle", dialogStyle)
+        putExtra("url", request.url)
+        putExtra("lastUA", request.lastUA)
+        putExtra("showReload", request.showReload)
+        putExtra("useFocus", request.useFocus)
+        putExtra("maxTryCount", request.maxTryCount)
+        putExtra("reloadOnCaptcha", request.reloadOnCaptcha)
+        putExtra("clearCookiesAtStart", request.clearCookiesAtStart)
+        putExtra("displayType", request.displayType)
+        putExtra("dialogStyle", request.dialogStyle)
     }, code)
 }
 
-fun startBypass(
-    activity: Activity,
-    code: Int,
-    url: String,
-    lastUA: String? = randomUA(),
-    showReload: Boolean,
-    useFocus: Boolean = false,
-    maxTryCount: Int = 3,
-    reloadOnCaptcha: Boolean = false,
-    clearCookiesAtStart: Boolean = false,
-    useDialog: Boolean = false,
-    dialogStyle: Int = 0
-) {
-    activity.startActivityForResult(Intent(activity, BypassActivity::class.java).apply {
-        putExtra("url", url)
-        putExtra("lastUA", lastUA)
-        putExtra("showReload", showReload)
-        putExtra("useFocus", useFocus)
-        putExtra("maxTryCount", maxTryCount)
-        putExtra("reloadOnCaptcha", reloadOnCaptcha)
-        putExtra("clearCookiesAtStart", clearCookiesAtStart)
-        putExtra("useDialog", useDialog)
-        putExtra("dialogStyle", dialogStyle)
-    }, code)
+class lazyMutable<T>(
+    val initializer: () -> T,
+) : ReadWriteProperty<Any?, T> {
+    private val lazyValue by lazy { initializer() }
+    private var newValue: T? = null
+
+    override fun getValue(thisRef: Any?, property: KProperty<*>) =
+        newValue ?: lazyValue
+
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+        newValue = value
+    }
 }
