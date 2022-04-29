@@ -91,6 +91,7 @@ class BypassActivity : AppCompatActivity() {
                 }
             }
         } else {
+            webview = layBindingShort.findViewById(R.id.webview)
             reload.hide()
             reloadOnCaptcha = true
         }
