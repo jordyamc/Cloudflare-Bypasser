@@ -110,7 +110,7 @@ class BypassActivity : AppCompatActivity() {
                 request: WebResourceRequest?
             ): WebResourceResponse? {
                 request?.url?.toString()?.let { url ->
-                    Log.e("Intercept", url)
+                    //Log.e("Intercept", url)
                     if (url.contains("captcha") && reloadOnCaptcha) {
                         lifecycleScope.launch(Dispatchers.Main) {
                             forceReload()
