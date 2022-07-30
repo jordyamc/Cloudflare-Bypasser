@@ -13,7 +13,6 @@
             <option value="$PROJECT_DIR$/bypass-lib" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
       </GradleProjectSettings>
     </option>
   </component>

@@ -34,10 +34,11 @@ class BypassActivity : AppCompatActivity() {
     private val reload by lazy<ExtendedFloatingActionButton> { layBinding.findViewById(R.id.reload) }
     private val layBindingShort by lazy { layoutInflater.inflate(R.layout.lay_web_short, null) }
     private val url by lazy { intent.getStringExtra("url") ?: "about:blank" }
-    private val lastUA by lazy { intent.getStringExtra("lastUA") ?: randomUA() }
+    private val lastUA by lazy { intent.getStringExtra("lastUA") ?: System.getProperty("http.agent") }
     private val showReload by lazy { intent.getBooleanExtra("showReload", false) }
     private val displayType by lazy { intent.getIntExtra("displayType", 0) }
     private val useFocus by lazy { intent.getBooleanExtra("useFocus", false) }
+    private val timeout by lazy { intent.getLongExtra("timeout", 6000) }
     private val maxTryCount by lazy { intent.getIntExtra("maxTryCount", 3) }
     private var reloadOnCaptcha by lazyMutable { intent.getBooleanExtra("reloadOnCaptcha", false) }
     private val clearCookiesAtStart by lazy { intent.getBooleanExtra("clearCookiesAtStart", false) }
@@ -48,7 +49,7 @@ class BypassActivity : AppCompatActivity() {
     private var tryCount = 0
     private val reloadRun = Runnable {
         lifecycleScope.launch(Dispatchers.Main) {
-            forceReload()
+            forceReload(true)
         }
     }
 
@@ -99,6 +100,8 @@ class BypassActivity : AppCompatActivity() {
         CookieManager.getInstance().setAcceptThirdPartyCookies(webview, true);
         webview.settings.apply {
             javaScriptEnabled = true
+            domStorageEnabled = true
+            setAppCacheEnabled(true)
         }
         val startTime = System.currentTimeMillis()
         webview.webViewClient = object : WebViewClient() {
@@ -107,6 +110,7 @@ class BypassActivity : AppCompatActivity() {
                 request: WebResourceRequest?
             ): WebResourceResponse? {
                 request?.url?.toString()?.let { url ->
+                    Log.e("Intercept", url)
                     if (url.contains("captcha") && reloadOnCaptcha) {
                         lifecycleScope.launch(Dispatchers.Main) {
                             forceReload()
@@ -152,7 +156,9 @@ class BypassActivity : AppCompatActivity() {
                                 ) == false
                             ) {
                                 Log.e("Bypass", "Reload")
-                                reloadCountdown.postDelayed(reloadRun, 6000)
+                                if (timeout > 5000) {
+                                    reloadCountdown.postDelayed(reloadRun, timeout)
+                                }
                                 forceReload()
                             }
                         }
@@ -167,7 +173,8 @@ class BypassActivity : AppCompatActivity() {
                     if (tryCount > maxTryCount) {
                         tryCount = 0
                         webview.settings.userAgentString = randomUA()
-                        Log.e("Reload", "Using new UA: ${webview.settings.userAgentString}")
+                        clearCookies()
+                        Log.e("Reload", "Using new identity: ${webview.settings.userAgentString}")
                     }
                     ///view?.loadUrl(url)
                 }
@@ -187,9 +194,12 @@ class BypassActivity : AppCompatActivity() {
         webview.loadUrl(url)
     }
 
-    private fun forceReload() {
+    private fun forceReload(clearCookies: Boolean = false) {
         tryCount = 0
         webview.settings.userAgentString = randomUA()
+        if (clearCookies) {
+            clearCookies()
+        }
         webview.loadUrl(url)
     }
 
@@ -215,6 +225,7 @@ class BypassActivity : AppCompatActivity() {
             putExtra("user_agent", webview.settings.userAgentString)
             putExtra("cookies", currentCookies())
         })
+        finish()
         super.onBackPressed()
     }
 
@@ -239,9 +250,10 @@ data class Result(val userAgent: String, val cookies: String)
 
 data class Request(
     val url: String,
-    val lastUA: String? = randomUA(),
+    val lastUA: String? = System.getProperty("http.agent"),
     val showReload: Boolean,
     val useFocus: Boolean = false,
+    val timeout: Long = 6000,
     val maxTryCount: Int = 3,
     val reloadOnCaptcha: Boolean = false,
     val clearCookiesAtStart: Boolean = false,
@@ -259,6 +271,7 @@ class BypassContract : ActivityResultContract<Request, Result>() {
                     putExtra("lastUA", lastUA)
                     putExtra("showReload", showReload)
                     putExtra("useFocus", useFocus)
+                    putExtra("timeout", timeout)
                     putExtra("maxTryCount", maxTryCount)
                     putExtra("reloadOnCaptcha", reloadOnCaptcha)
                     putExtra("clearCookiesAtStart", clearCookiesAtStart)
@@ -294,6 +307,7 @@ fun FragmentActivity.startBypass(
         putExtra("lastUA", request.lastUA)
         putExtra("showReload", request.showReload)
         putExtra("useFocus", request.useFocus)
+        putExtra("timeout", request.timeout)
         putExtra("maxTryCount", request.maxTryCount)
         putExtra("reloadOnCaptcha", request.reloadOnCaptcha)
         putExtra("clearCookiesAtStart", request.clearCookiesAtStart)
@@ -311,6 +325,7 @@ fun Fragment.startBypass(
         putExtra("lastUA", request.lastUA)
         putExtra("showReload", request.showReload)
         putExtra("useFocus", request.useFocus)
+        putExtra("timeout", request.timeout)
         putExtra("maxTryCount", request.maxTryCount)
         putExtra("reloadOnCaptcha", request.reloadOnCaptcha)
         putExtra("clearCookiesAtStart", request.clearCookiesAtStart)
