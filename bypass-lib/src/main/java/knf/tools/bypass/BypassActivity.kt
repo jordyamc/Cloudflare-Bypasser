@@ -220,13 +220,18 @@ class BypassActivity : AppCompatActivity() {
             val base = "https://www.whatismybrowser.com/guides/the-latest-user-agent"
             latestUA.add(System.getProperty("http.agent"))
             latestUA.add(WebSettings.getDefaultUserAgent(this@BypassActivity))
-            Jsoup.connect("$base/chrome").get().select("span.code:contains(Win64)").first()?.text()?.ifBlank { null }?.also { latestUA.add(it) }
-            Jsoup.connect("$base/firefox").get().select("span.code:contains(Win64)").first()?.text()?.ifBlank { null }?.also { latestUA.add(it) }
-            Jsoup.connect("$base/safari").get().select("span.code:contains(Macintosh)").first()?.text()?.ifBlank { null }?.also { latestUA.add(it) }
-            Jsoup.connect("$base/edge").get().select("span.code:contains(Win64)").first()?.text()?.ifBlank { null }?.also { latestUA.add(it) }
-            Jsoup.connect("$base/opera").get().select("span.code:contains(Win64)").first()?.text()?.ifBlank { null }?.also { latestUA.add(it) }
-            Jsoup.connect("$base/vivaldi").get().select("span.code:contains(Win64)").first()?.text()?.ifBlank { null }?.also { latestUA.add(it) }
-            Jsoup.connect("$base/yandex-browser").get().select("span.code:contains(Win64)").first()?.text()?.ifBlank { null }?.also { latestUA.add(it) }
+            try {
+                Jsoup.connect("$base/safari").get().select("span.code:contains(Macintosh)").first()?.text()?.ifBlank { null }?.also { latestUA.add(it) }
+            } catch (e: Exception) {
+                //
+            }
+            try {
+                Jsoup.connect("$base/windows").get().select("span.code").mapNotNull { it.text().ifBlank { null } }.forEach {
+                    latestUA.add(it)
+                }
+            } catch (e: Exception) {
+                //
+            }
         }
     }
 

@@ -1,2 +1,4 @@
 rootProject.name = "Bypass tester"
+if (!System.env.JITPACK)
+    include ':app'
 include ':bypass-lib'
