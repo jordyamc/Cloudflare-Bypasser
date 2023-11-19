@@ -59,8 +59,8 @@ class BypassActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (displayType > 0)
-            setTheme(R.style.Theme_Transparent)
+        if (displayType == 0)
+            setTheme(R.style.Theme_BypassTester)
         super.onCreate(savedInstanceState)
         if (displayType == DisplayType.ACTIVITY) {
             setContentView(layBinding)
@@ -74,17 +74,23 @@ class BypassActivity : AppCompatActivity() {
                 reload.hide()
             }
             webview = layBinding.findViewById(R.id.webview)
-        } else if (displayType == DisplayType.DIALOG) {
+        } else {
+            setContentView(R.layout.activity_translucent)
             title = " "
-            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            //window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             webview = layBindingShort.findViewById(R.id.webview)
-            if (dialogStyle == 0) {
+            if (displayType == DisplayType.BACKGROUND || dialogStyle == 0) {
                 dialog = BottomSheetDialog(this@BypassActivity).apply {
                     setContentView(layBindingShort)
                     setCanceledOnTouchOutside(false)
                     behavior.apply {
                         //expandedOffset = 400
-                        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                        if (displayType == DisplayType.BACKGROUND) {
+                            peekHeight = 0
+                            state = BottomSheetBehavior.STATE_COLLAPSED
+                        } else {
+                            state = BottomSheetBehavior.STATE_EXPANDED
+                        }
                         isDraggable = false
                     }
                     show()
@@ -97,10 +103,6 @@ class BypassActivity : AppCompatActivity() {
                     it.show()
                 }
             }
-        } else {
-            webview = layBindingShort.findViewById(R.id.webview)
-            reload.hide()
-            reloadOnCaptcha = true
         }
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(webview, true);

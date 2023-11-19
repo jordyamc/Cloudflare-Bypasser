@@ -60,7 +60,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'knf.tools'
                 artifactId = 'bypass'
-                version = '1.0.24'
+                version = '1.0.25'
                 artifact(androidSourcesJar)
             }
         }

@@ -37,39 +37,81 @@
         android:layout_height="wrap_content"
         android:text="Clear cookies"/>
 
-    <CheckBox
-        android:id="@+id/ck_use_dialog"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Show dialog"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Dialog type"/>
-
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/toggle_dialog_type"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:singleSelection="true"
-        app:selectionRequired="true"
-        app:checkedButton="@+id/dialog_default">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/dialog_default"
-            style="?attr/materialButtonOutlinedStyle"
+        android:orientation="vertical"
+        android:gravity="center">
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Default" />
+            android:text="Display type"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/dialog_sheet"
-            style="?attr/materialButtonOutlinedStyle"
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggle_display_type"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sheet" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:checkedButton="@+id/display_activity">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/display_activity"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Activity" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/display_dialog"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dialog" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/display_background"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Background" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/lay_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:gravity="center">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dialog type"/>
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggle_dialog_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:checkedButton="@+id/dialog_default">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dialog_default"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Default" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dialog_sheet"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sheet" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+    </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/testButton"

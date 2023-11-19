@@ -3,6 +3,6 @@
     package="knf.tools.bypass">
 
     <application>
-        <activity android:name=".BypassActivity" android:theme="@style/Theme.BypassTester"/>
+        <activity android:name=".BypassActivity" android:theme="@style/Theme.Transparent"/>
     </application>
 </manifest>

@@ -1,19 +1,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.BypassTester" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.BypassTester" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">#000</item>
         <item name="colorPrimaryVariant">#000</item>
         <item name="colorSecondary">#D32F2F</item>
         <item name="colorOnPrimary">#fff</item>
         <item name="colorOnSecondary">#fff</item>
     </style>
-    <style name="Theme.Transparent" parent="Theme.MaterialComponents.Dialog.Alert">
-        <!--<item name="android:windowIsTranslucent">true</item>
+    <style name="Theme.Transparent" parent="Theme.BypassTester">
+        <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowIsFloating">true</item>
-        <item name="android:backgroundDimEnabled">false</item>-->
-        <item name="android:windowTranslucentNavigation">true</item>
-        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 </resources>
