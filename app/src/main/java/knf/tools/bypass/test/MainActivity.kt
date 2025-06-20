@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.testButton.setOnClickListener {
             startBypass(666, Request(
-                "https://www3.animeflv.net/", lastUA = null,
+                "https://www.novelupdates.com/", lastUA = null,
                 showReload = binding.ckShowReload.isChecked,
                 maxTryCount = 3,
                 useLatestUA = true,

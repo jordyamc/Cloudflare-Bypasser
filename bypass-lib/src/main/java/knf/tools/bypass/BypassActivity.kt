@@ -10,11 +10,13 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
+import android.view.View
 import android.webkit.*
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
@@ -50,6 +52,7 @@ class BypassActivity : AppCompatActivity() {
     private val reloadCountdown = Handler(Looper.getMainLooper())
     private var dialog: AppCompatDialog? = null
     private lateinit var webview: WebView
+    private lateinit var loading: View
     private val latestUA = mutableListOf<String>()
     private var tryCount = 0
     private val reloadRun = Runnable {
@@ -74,11 +77,13 @@ class BypassActivity : AppCompatActivity() {
                 reload.hide()
             }
             webview = layBinding.findViewById(R.id.webview)
+            loading = layBinding.findViewById(R.id.loading)
         } else {
             setContentView(R.layout.activity_translucent)
             title = " "
             //window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             webview = layBindingShort.findViewById(R.id.webview)
+            loading = layBindingShort.findViewById(R.id.loading)
             if (displayType == DisplayType.BACKGROUND || dialogStyle == 0) {
                 dialog = BottomSheetDialog(this@BypassActivity).apply {
                     setContentView(layBindingShort)
@@ -159,6 +164,7 @@ class BypassActivity : AppCompatActivity() {
                             this@BypassActivity.finish()
                         } else if (waitCaptcha) {
                             Log.e("Bypass", "Waiting captcha")
+                            loading.isVisible = false
                         } else {
                             if (view?.title?.containsAny(
                                     "Just a moment...",
